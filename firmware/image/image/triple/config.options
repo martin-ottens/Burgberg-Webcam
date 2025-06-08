@@ -1,0 +1,4 @@
+# Partition sizes
+boot_part_size=120%
+root_part_size=120%
+data_part_size=10M

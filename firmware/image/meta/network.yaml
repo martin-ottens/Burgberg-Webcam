@@ -1,0 +1,23 @@
+---
+name: wifi
+mmdebstrap:
+  packages:
+    - wpasupplicant
+    - wireless-tools
+    - raspberrypi-net-mods
+    - network-manager
+    - net-tools
+    - iproute2
+    - firmware-brcm80211
+    - wireguard
+    - wireguard-tools
+  setup-hooks:
+    - grep -q '<CHANGE_ME>' ${IGconf_ext_dir}/files/network/wifi.nmconnection && { echo "Please update files/network/wifi.nmconnection!"; exit 1; } || true
+    - grep -q '<CHANGE_ME>' ${IGconf_ext_dir}/files/network/wireguard.nmconnection && { echo "Please update files/network/wireguard.nmconnection!"; exit 1; } || true
+  customize-hooks:
+    - chroot $1 apt remove -y systemd-timesyncd # Workaround: systemd-timesyncd is a deep dependency and provides "time-daemon"
+    - chroot $1 apt install -y chrony           #             ... which conflicts with chrony.
+    - install -m 0600 ${IGconf_ext_dir}/files/network/wifi.nmconnection $1/mnt/wifi.nmconnection
+    - ln -s /mnt/wifi.nmconnection $1/etc/NetworkManager/system-connections/wifi.nmconnection
+    - install -m 0600 ${IGconf_ext_dir}/files/network/wireguard.nmconnection $1/mnt/wireguard.nmconnection
+    - ln -s /mnt/wireguard.nmconnection $1/etc/NetworkManager/system-connections/wireguard.nmconnection

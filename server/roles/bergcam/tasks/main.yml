@@ -1,0 +1,24 @@
+---
+- name: Create user
+  ansible.builtin.user:
+    name: bergcam
+    create_home: true
+    home: /var/local/bergcam
+    system: true
+    state: present
+
+- name: Setup WireGuard peer
+  vars:
+    key_scopes:
+      - server
+      - camera
+  ansible.builtin.import_tasks:
+    file: wireguard.yml
+
+- name: Install and setup Webserver
+  ansible.builtin.import_tasks:
+    file: webserver.yml
+
+- name: Install ingestor service
+  ansible.builtin.import_tasks:
+    file: ingest.yml

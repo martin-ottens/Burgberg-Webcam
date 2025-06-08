@@ -1,0 +1,63 @@
+- name: Install apt packets
+  apt:
+    name:
+      - python3
+      - python3-requests
+      - python3-pillow
+      - python3-fastapi
+      - python3-uvicorn
+    state: present
+
+- name: Create archive directory
+  file:
+    path: /opt/archive
+    state: directory
+    mode: '0744'
+    owner: bergcam
+    group: bergcam
+
+- name: Copy ingestor script
+  copy: 
+    src: ingestor.py
+    dest: /var/local/bergcam/
+    owner: bergcam
+    group: bergcam
+    mode: '0744'
+  notify: Restart ingestor
+
+- name: Create assets path
+  file:
+    path: /var/local/bergcam/assets
+    state: directory
+    mode: '0644'
+    owner: bergcam
+    group: bergcam
+
+- name: Copy assets logo for overlay
+  copy:
+    src: ../frontend/assets/logo.png
+    dest: /var/local/bergcam/assets/logo.png
+    mode: '0644'
+    owner: bergcam
+    group: bergcam
+
+- name: Copy assets font for overlay
+  copy:
+    src: ../frontend/assets/berlin-semi.ttf
+    dest: /var/local/bergcam/assets/font.ttf
+    mode: '0644'
+    owner: bergcam
+    group: bergcam
+
+- name: Install systemd service for ingestor
+  template:
+    src: ingestor.service.j2
+    dest: /etc/systemd/system/ingestor.service
+  notify: Restart ingestor
+
+- name: Autostart ingestor systemd service
+  ansible.builtin.systemd_service:
+    name: "ingestor"
+    enabled: true
+    daemon_reload: true
+  notify: Restart ingestor

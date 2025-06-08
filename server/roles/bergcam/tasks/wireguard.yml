@@ -1,0 +1,117 @@
+- name: Install apt packets
+  apt:
+    name:
+      - wireguard
+    state: present
+
+- name: Create server key store
+  file:
+    path: /etc/wireguard/keys
+    state: directory
+    mode: '0700'
+
+- name: Check if private key exists
+  ansible.builtin.stat:
+    path: "/etc/wireguard/keys/{{ item }}.private"
+  register: key_exists_results
+  loop: "{{ key_scopes }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Generate key create facts
+  set_fact:
+    keys_to_create: "{{ keys_to_create | default([]) + [ item.item ] }}"
+  when: not item.stat.exists
+  loop: "{{ key_exists_results.results }}"
+
+- name: Generate private keys
+  command: wg genkey
+  register: generate_privkey
+  when: keys_to_create is not undefined
+  loop: "{{ keys_to_create }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Save private keys
+  copy:
+    content: "{{ item.stdout }}"
+    dest: "/etc/wireguard/keys/{{ item.item }}.private"
+    mode: '0600'
+  when: keys_to_create is not undefined
+  loop: "{{ generate_privkey.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Generate public keys
+  shell: echo "{{ item.stdout }}" | wg pubkey
+  register: generate_pubkey
+  when: keys_to_create is not undefined
+  loop: "{{ generate_privkey.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Save public keys
+  copy:
+    content: "{{ item.stdout }}"
+    dest: "/etc/wireguard/keys/{{ item.item.item }}.public"
+    mode: '0600'
+  when: keys_to_create is not undefined
+  loop: "{{ generate_pubkey.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Get all private keys
+  slurp:
+    src: "/etc/wireguard/keys/{{ item }}.private"
+  register: read_privkeys
+  loop: "{{ key_scopes }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Get all public keys
+  slurp:
+    src: "/etc/wireguard/keys/{{ item }}.public"
+  register: read_pubkeys
+  loop: "{{ key_scopes }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Generate facts with all keys
+  set_fact:
+    wireguard_keys: >
+      {{ wireguard_keys | default({}) | combine({
+          item.item: {
+            'private': (read_privkeys.results | selectattr('item', 'equalto', item.item) | first).content | b64decode,
+            'public':  (read_pubkeys.results | selectattr('item', 'equalto', item.item) | first).content | b64decode
+          }
+        }) }}
+  loop: "{{ read_privkeys.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Deploy WireGuard config for wg0
+  template:
+    src: wg0.conf.j2
+    dest: "/etc/wireguard/wg0.conf"
+    mode: '0600'
+  when: keys_to_create is not undefined
+  register: deployed_wg_conf
+
+- name: Enable and start WireGuard service
+  ansible.builtin.systemd_service:
+    name: "wg-quick@wg0"
+    enabled: true
+    state: "restarted"
+  when: deployed_wg_conf is changed
+
+- name: Fetch server public key
+  fetch:
+    src: /etc/wireguard/keys/server.public
+    dest: ./server.public
+    flat: true
+
+- name: Fetch camera private key
+  fetch:
+    src: /etc/wireguard/keys/camera.private
+    dest: ./camera.private
+    flat: true

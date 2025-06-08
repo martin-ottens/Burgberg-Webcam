@@ -1,0 +1,16 @@
+[Unit]
+Description=Bergcam Capture and Upload
+After=network.target
+
+[Service]
+Type=simple
+User=camera
+ExecStart=/usr/bin/python3 /usr/local/bin/capture/capture.py /mnt/captureconfig.json
+WorkingDirectory=/usr/local/bin/capture
+Restart=always
+RestartSec=10s
+StartLimitIntervalSec=0
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

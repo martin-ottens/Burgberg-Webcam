@@ -1,0 +1,6 @@
+- name: Install Bergcam Webserver
+  hosts: servers
+  become: yes
+  become_method: sudo
+  roles:
+    - bergcam

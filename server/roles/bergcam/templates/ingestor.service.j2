@@ -1,0 +1,16 @@
+[Unit]
+Description=Bergcam Ingestor
+After=network.target
+
+[Service]
+Type=simple
+User=bergcam
+ExecStart=/usr/bin/python3 /var/local/bergcam/ingestor.py --host 192.168.2.1 --port 8081 --out /var/www/bergcam/captures --archive /opt/archive
+WorkingDirectory=/var/local/bergcam
+Restart=always
+RestartSec=10s
+StartLimitIntervalSec=0
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

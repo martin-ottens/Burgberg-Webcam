@@ -1,0 +1,12 @@
+{
+    "ingest_url": "http://192.168.2.1:8081/ingest",
+    "width": 1920,
+    "height": 1080,
+    "white_balance": "auto",
+    "encoding": "png",
+    "tmpfile": "/tmp/capture",
+    "additional_capture_flags": "--hflip --vflip --sharpness=3.0 --hdr=auto <CHANGE_ME>",
+    "interval_seconds": 10,
+    "ingest_timeout": 5,
+    "storage_base": "/mnt/storage"
+}

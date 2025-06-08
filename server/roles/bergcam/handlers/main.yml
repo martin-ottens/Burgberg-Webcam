@@ -1,0 +1,9 @@
+- name: Restart nginx
+  ansible.builtin.systemd_service:
+    name: "nginx"
+    state: "restarted"
+- name: Restart ingestor
+  ansible.builtin.systemd_service:
+    name: "ingestor"
+    state: "restarted"
+

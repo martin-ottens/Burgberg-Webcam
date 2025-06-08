@@ -1,0 +1,22 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/bergcam;
+
+
+    server_name _;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location /captures {
+        add_header 'Access-Control-Allow-Origin' '*';
+        error_page 404 /default.webp;
+    }
+
+    location = /default.webp {
+        root /var/www/bergcam/assets;
+    }
+}

@@ -1,0 +1,41 @@
+- name: Install apt packets
+  apt:
+    name:
+      - nginx
+    state: present
+
+- name: Create Web directories
+  file:
+    path: /var/www/bergcam/captures
+    state: directory
+    mode: '0655'
+    owner: bergcam
+    group: bergcam
+    recurse: true
+
+- name: Copy webroot contents
+  copy:
+    src: ../frontend/dist/
+    dest: /var/www/bergcam/
+    owner: bergcam
+    group: bergcam
+    mode: '0655'
+
+- name: Remove default webspace
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Restart nginx
+
+- name: Install new webspace
+  template:
+    src: bergcam.conf.j2
+    dest: /etc/nginx/sites-available/bergcam.conf
+  notify: Restart nginx
+
+- name: Link new webspace
+  file:
+    src: /etc/nginx/sites-available/bergcam.conf
+    path: /etc/nginx/sites-enabled/bergcam.conf
+    state: link
+  notify: Restart nginx

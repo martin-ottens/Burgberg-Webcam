@@ -1,0 +1,10 @@
+---
+name: overlayfs
+mmdebstrap:
+  packages:
+    - busybox-static
+    - overlayroot
+  customize-hooks:
+    - chroot $1 sed -i 's/overlayroot=""/overlayroot="tmpfs:recurse=0"/' /etc/overlayroot.conf
+    - cp ${IGconf_ext_dir}/files/setup_mount/resizepart_once $1/etc/init.d/resizepart_once && chmod +x $1/etc/init.d/resizepart_once && chroot $1 update-rc.d resizepart_once defaults
+    - chmod 777 $1/mnt

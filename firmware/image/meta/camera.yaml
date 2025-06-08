@@ -1,0 +1,23 @@
+---
+name: camera
+mmdebstrap:
+  packages:
+    - libcamera-tools
+    - rpicam-apps
+    - python3-requests
+    - python3-pillow
+  setup-hooks:
+    - grep -q '<CHANGE_ME>' ${IGconf_ext_dir}/files/camera/captureconfig.json && { echo "Please update files/camera/captureconfig.json!"; exit 1; }
+  customize-hooks:
+    - cp ${IGconf_ext_dir}/files/camera/camera.rules $1/etc/udev/rules.d/camera.rules
+    - echo "dtoverlay=imx477" >> $1/boot/firmware/config.txt
+    - cp ${IGconf_ext_dir}/files/camera/captureconfig.json $1/mnt/captureconfig.json
+    - chroot $1 install -o camera -g camera -d /usr/local/bin/capture
+    - cp ${IGconf_ext_dir}/files/camera/capture.py $1/mnt/capture.py
+    - ln -s /mnt/capture.py $1/usr/local/bin/capture/capture.py
+    - chroot $1 chown camera:camera /mnt/capture.py
+    - chroot $1 chown -R camera:camera /usr/local/bin/capture
+    - chroot $1 chmod o+x /mnt/capture.py
+    - chroot $1 install -d -m 0744 -o camera -g camera /mnt/storage
+    - cp ${IGconf_ext_dir}/files/camera/capture.service $1/etc/systemd/system/capture.service
+    - $BDEBSTRAP_HOOKS/enable-units "$1" capture.service
