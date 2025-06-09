@@ -16,3 +16,8 @@ ansible-playbook --ask-become-pass --ask-pass playbook.yml
 
 The frontend will be available at port 80, continue to configure the webserver (`/etc/sites-available/bergcam`) or use a reverse proxy in front of it.
 The Ansible playbook will copy the WireGuard keys `camera.private` and `server.public` to the controller host. They are used to create the camera firmware.
+
+Use the following command to update the frontend web files (e.g., after running the frontend build):
+```bash
+ansible-playbook --ask-become-pass --ask-pass update_frontend.yml
+```

@@ -11,7 +11,9 @@ server {
         try_files $uri $uri/ =404;
     }
 
+
     location /captures {
+        alias /var/www/captures;
         add_header 'Access-Control-Allow-Origin' '*';
         error_page 404 /default.webp;
     }

@@ -1,0 +1,37 @@
+- name: Update bergcam frontend
+  hosts: servers
+  become: yes
+  become_method: sudo
+  tasks:
+
+    - name: Install additional dependencies
+      apt:
+        name:
+          - rsync
+        state: present
+
+    - name: Create temporary upload dir
+      ansible.builtin.tempfile:
+        state: directory
+      register: tempdir
+
+    - name: Copy frontend files to temp dir
+      copy:
+        src: ../frontend/dist/
+        dest: "{{ tempdir.path }}"
+        owner: bergcam
+        group: bergcam
+        mode: '0655'
+  
+    - name: Synchronize contents of tempdir to webspace (overwrite)
+      ansible.posix.synchronize:
+        src: "{{ tempdir.path }}/"
+        dest: /var/www/bergcam/
+        recursive: yes
+        delete: yes
+      delegate_to: "{{ inventory_hostname }}"
+
+    - name: Correct permissions
+      file:
+        path: /var/www/bergcam
+        mode: '0655'

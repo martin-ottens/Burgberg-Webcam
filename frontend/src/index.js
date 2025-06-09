@@ -7,7 +7,7 @@ import "@fortawesome/fontawesome-free/js/all.js";
 import '@fortawesome/fontawesome-free/css/all.css';
 import "./style.css";
 
-const BASE_CAPTURE_URL = '/captures';
+const BASE_CAPTURE_URL = 'https://bergcam.de/captures';
 const LATEST_JSON_URL = BASE_CAPTURE_URL + '/latest.json';
 const OLDEST_JSON_URL = BASE_CAPTURE_URL + '/oldest.json';
 const IMAGE_STEP_SECONDS = 10;

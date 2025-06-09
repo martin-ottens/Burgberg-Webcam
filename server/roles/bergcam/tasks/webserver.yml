@@ -6,12 +6,14 @@
 
 - name: Create Web directories
   file:
-    path: /var/www/bergcam/captures
+    path: /var/www/{{ item }}
     state: directory
     mode: '0655'
     owner: bergcam
     group: bergcam
-    recurse: true
+  loop:
+    - bergcam
+    - captures
 
 - name: Copy webroot contents
   copy:
